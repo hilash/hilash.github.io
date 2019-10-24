@@ -1,15 +1,24 @@
 # Example Site settings
 
-#google_analytics: UA-NNNNNNNN-N
+# google_analytics: UA-NNNNNNNN-N
 
-#header_pages:
-#  - index.md
-#  - about.md
-
-#footer: 'follow us on <a href="https://twitter.com/">twitter</a>'
-
-#style: light # dark (default) or light
+style: light # dark (default) or light
 #listen_for_clients_preferred_style: true # true or false (default)
 
 plugins:
   - jekyll-seo-tag
+
+title: 'b2a3e8.github.io'
+description: "site description for seo"
+#baseurl: "/jekyll-theme-console"
+url: "https://b2a3e8.github.io"
+
+header_pages:
+  - index.md
+  - about.md
+  - contact.md
+
+footer: 'follow us on <a href="https://twitter.com/">twitter</a>'
+
+# Build settings
+markdown: kramdown
