@@ -1,45 +1,46 @@
 ---
 layout: post
 title:  "Reflections of a laser beam"
-date:   2019-10-21
+date:   2019-10-25
 categories:
 ---
 
-I must admit, I didn't take the optics course during my Bs.c. in Physics. Nevertheless, One can never forget how light simply works - it hits the surface, and then reflect.
+I must admit, I didn't take the optics course during my Bs.c. in Physics. Nevertheless, One can never forget how light simply works - it hits the surface, and then reflects.
 
 [Project Euler problem 144](https://projecteuler.net/problem=144) discuss the following problem (in short):
 >A lazer beam enters an ellipse ($$4x^2 + y^2 = 100$$) with small hole at it's top ($$−0.01\leq x\leq+0.01$$)
 >How many times does the beam hit the internal surface of the ellipse before exiting?
 >![Image](/assets/images/p144_2.gif)
 
-For the specific details you can read the full problem.
-Coming to solve this, vectors arithmatic comes in handy. I don't know why this problem difficulty is 50%, given that any high-school graduate suppose to have the tools for it.
+For the specific details, you can read the full problem. Coming to solve this, vectors arithmetic comes in handy. I don’t know why this problem difficulty is 50%, given that any high-school graduate supposes to have the tools for it.
 
-I wrote my soultion in Python, and used matplotlib for the animation. 
-I won't post it since it's againt ProjectEuler's wish - solving the problem by yourself makes all the fun. This is the ellipse after %d steps. You can see the blue beam being the last to leave.
+I wrote my solution in Python and used matplotlib for the animation. I won’t post it since it’s against ProjectEuler’s wish - solving the problem by yourself makes all the fun. This is the ellipse after %d steps. You can see the blue beam being the last to leave.
 >![Image](/assets/images/lazer-beam-reault.png)
 
-I will however solve here my version of this problem, using a different shape. 
+I will, however, solve here my version of this problem, using a different shape. 
 
->**A lazer beam enters a rectangle with small hole at it's top (2px wide).
+>**A laser beam enters a rectangle with a small hole at its top (2px wide).
 >How many times does the beam hit the internal surface of the ellipse before exiting?**
 
-when approching this problem we need to answer few questions:
-1. How to detect where the lazer beam hits?
+when approaching this problem we need to answer a few questions:
+1. How to detect where the laser beam hits?
 2. How is the beam reflected after hitting the surface?
 3. What about corners?
+
 let's answer it, step by step.
 
-# How to detect where the lazer beam hits?
+# How to detect where the laser beam hits?
 
-We have a rectangle here, which has it's pros and cons: on one side, it's easier, since it's composed out of 4 line segments. On the other, unlike the ellipse, it doesn't have a single elegant equeation, which would come in handy if we would like to detect intersection between the beam and the shape.
+We have a rectangle here, which has its pros and cons: on one side, it's easier, since it's composed out of 4 line segments. On the other, unlike the ellipse, it doesn't have a single elegant equation, which would come in handy if we would like to detect the intersection between the beam and the shape.
 So, we have 4 line segments (rectangle) + 1 line segment (beam).
 *
 Let's explore some *lines segments intersection detection* methods:
 1. [Line–line intersection](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection)
 2. [How do you detect where two line segments intersect?](https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/1201356#1201356)
 
-We would implement the method explained on the first link: given two lines, where each line has it's start and finish points, calculate using a parameter when the two would intersect. 
+We would implement the method explained in the first link: given two lines, where each line has its starts and finish points, calculate using a parameter when the two would intersect. 
+
+The code is written in JavaScript, and we'll use it later on in the simulation code:
 
 ```javascript
 var determinant = function(a, b, c, d) {
@@ -74,7 +75,7 @@ var doLinesIntesect = function(line1, line2) {
     return [px, py];
 }
 ```
-A beam would have 2 interesecting edges: the edge it came from and the edge it hits. A simple condition will give us the correct edge the beam hits.
+A beam would have 2 intersecting edges: the edge it came from and the edge it hits. A simple condition will give us the correct edge the beam hits.
 
 # How is the beam reflected after hitting the surface?
 Given an edge and a hitting beam, we would like to calculate the reflected beam. 
@@ -90,7 +91,7 @@ $$\overrightarrow{r}=\overrightarrow{d}-2(\overrightarrow{d}\cdot\hat{n})\hat{n}
 That formula is really easy to grasp after writing down the vectors.
 ![Normal](/assets/images/vector4.png)
 
-Here is the code:
+JS code:
 ```javascript
 var getRefelctedVector = function(n, d) {
     // d is the hitting vector
@@ -114,8 +115,8 @@ var getNextBeam = function(ctx, beam, startingEdge, edges, normals, limit) {
     return [newBeam, res.edgeIndex];
 }
 ```
-The function gets the beam and starting edge, then calculates the vectors n, d, and then using linear algebra to calculate the reflected vector r.
-Notice that n, d, r are all direction vectors (meaning they don't reflect the real position on the grid.).
+The function gets the beam and starting edge, then calculates the vectors $$\hat{n}$$, $$\overrightarrow{d}$$, and then using linear algebra to calculate the reflected vector $$\overrightarrow{r}$$.
+Notice that $$\hat{n}, \overrightarrow{d}, \overrightarrow{r}$$ are all direction vectors (meaning they don't reflect the real position on the grid).
 To get the segment line representation (point1->point2), we would combine the intersection point as the starting point, to the direction vector.
 
 # What about corners?
