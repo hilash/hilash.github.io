@@ -1,6 +1,6 @@
 # Example Site settings
 
-# google_analytics: UA-NNNNNNNN-N
+google_analytics: UA-150986144-1
 
 style: light # dark (default) or light
 #listen_for_clients_preferred_style: true # true or false (default)
