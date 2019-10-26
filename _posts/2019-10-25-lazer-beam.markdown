@@ -19,7 +19,7 @@ I wrote my soultion in Python, and used matplotlib for the animation.
 I won't post it since it's againt ProjectEuler's wish - solving the problem by yourself makes all the fun. This is the ellipse after %d steps. You can see the blue beam being the last to leave.
 >![Image](/assets/images/lazer-beam-reault.png)
 
-I will however solve here a version of this problem, using a different shape. 
+I will however solve here my version of this problem, using a different shape. 
 
 >**A lazer beam enters a rectangle with small hole at it's top (2px wide).
 >How many times does the beam hit the internal surface of the ellipse before exiting?**
@@ -80,18 +80,22 @@ A beam would have 2 interesecting edges: the edge it came from and the edge it h
 Given an edge and a hitting beam, we would like to calculate the reflected beam. 
 Converting each line to vector and solve it using the [reflection formula](https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector) is really simple and easy.
 
-![Normal](/assets/images/normal.png)
+![Normal](/assets/images/vector1.png)
+
+
 Given $$\hat{n}$$, the normalized [normal](https://en.wikipedia.org/wiki/Normal_(geometry)) of the edge, pointed to the interior or the rectangle, and $$\overrightarrow{d}$$ the hitting beam vector, the reflected vector is described as:
 
-$$\overrightarrow{r}=\overrightarrow{d}-2\overrightarrow{d}\cdot\hat{n}$$
+$$\overrightarrow{r}=\overrightarrow{d}-2(\overrightarrow{d}\cdot\hat{n})\hat{n}$$
 
-That formula is really easy to grasp after painting the vectors.
+That formula is really easy to grasp after writing down the vectors.
+![Normal](/assets/images/vector4.png)
 
+Here is the code:
 ```javascript
 var getRefelctedVector = function(n, d) {
     // d is the hitting vector
     // n is the normalized normal
-    // r = d - 2d*n, where * is dot product
+    // r = d - 2(d*n)n, where * is dot product
     rx = d[0] - 2*(d[0]*n[0]+d[1]*n[1])*n[0]
     ry = d[1] - 2*(d[0]*n[0]+d[1]*n[1])*n[1]
     return [rx, ry]
@@ -112,25 +116,11 @@ var getNextBeam = function(ctx, beam, startingEdge, edges, normals, limit) {
 ```
 The function gets the beam and starting edge, then calculates the vectors n, d, and then using linear algebra to calculate the reflected vector r.
 Notice that n, d, r are all direction vectors (meaning they don't reflect the real position on the grid.).
-Inorder to get the segemnt line representation (point1->point2), we would combine the intersection point as the starting point, to the direction vector.
+To get the segment line representation (point1->point2), we would combine the intersection point as the starting point, to the direction vector.
+
 # What about corners?
-Bla.
+Since the Normal is not defined at corners, we would ignore that case.
+Also, since our system is discrete - we won't observe this kind of behavior.
 <br/>
 
-<button type="button">Click Me!</button>
-
-
-<br/>
-<input id="beam" type="checkbox"  onclick="myFunction()"> Show beam
-<input id="reflected-beam" type="checkbox"  onclick="myFunction()"> Show Reflected Beam
-<input id="normal" type="checkbox"  onclick="myFunction()"> Show Normal
-<hr>
-<input id="done" type="checkbox"  onclick="myFunction()"> Stop after beam exites?
-Slow or Fast <input id="slider1" type="range" min="100" max="500" step="10" />
-Max Steps: <input type="number" name="quantity" min="0">
-
-
-<canvas id="lazerCanvas" width="500px" height="300px" style="background: white">
-Your browser does not support the HTML5 canvas tag.
-</canvas>
-<script src="{{ base.url | prepend: site.url }}/assets/js/lazer-beam.js"></script>
+{%- include projects/lazer-beam.html -%}

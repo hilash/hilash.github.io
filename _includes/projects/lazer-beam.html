@@ -1,0 +1,31 @@
+
+
+<div>
+    <div>
+        <h1><b> Reflections inside a Rectangle</b></h1>
+        <p>This is a simulation of a ray inside a rectangle.
+The ray enters from a hole in the middle of the top edge.
+You can find the <a target="_blank" rel="noopener noreferrer"
+    href="https://github.com/hilash/Beam-Reflections">source here</a>.
+        </p>
+        <br/>
+        <div style="border:1px dashed black; padding: 10px; display: inline-block">
+            <canvas id="lazerCanvas" width="500px" height="300px" style="background: white">
+            Your browser does not support the HTML5 canvas tag.
+            </canvas>
+            <br/>
+            #Steps <b id="num-steps">0</b>
+            <hr style="border:0.5px dashed black;">   
+            <ul style="list-style-type:none; list-style: none; padding-left: 0;">
+                <li><input id="show-beam" type="checkbox" checked onclick="updateRectStateAndRun()" > Show beam</li>
+                <li><input id="show-reflected-beam" type="checkbox" checked onclick="updateRectStateAndRun()"> Show Reflected Beam</li>
+                <li><input id="show-normal" type="checkbox" onclick="updateRectStateAndRun()"> Show Normal</li>
+                <li><input id="ignore-hole" type="checkbox" onclick="updateRectStateAndRun()"> Run Forever (ignore hole)</li>
+                <li>Slow or Fast<input id="simulation-fps" type="range" min="1" max="120" step="1" value="3" onclick="updateRectStateAndRun()"/></li>
+                <li>Starting Angle [0.1&#176;-179.9&#176;]<input id="starting-angle" type="range" min="0.1" max="179.9" step="0.1" value="45.0" onclick="updateRectStateAndRun()"/><b id="angle-text">45</b></li>
+                <li>Max Steps (0 for inf): <input id="simulation-max-steps" type="number" min="0" value="2000" onclick="updateRectStateAndRun()"></li>
+            </ul>    
+        </div> 
+    </div>
+    <script src="/projects/lazer-beam/lazer-beam.js"></script>
+</div>

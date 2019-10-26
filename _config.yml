@@ -8,17 +8,19 @@ style: light # dark (default) or light
 plugins:
   - jekyll-seo-tag
 
-title: 'b2a3e8.github.io'
-description: "site description for seo"
+title: 'hilash.github.io'
+description: "Hila Shmuel, Blog."
 #baseurl: "/jekyll-theme-console"
-url: "https://b2a3e8.github.io"
+url: "https://hilash.github.io"
+linkedin_username: hilashmuel
 
 header_pages:
   - index.md
   - about.md
   - contact.md
 
-footer: 'follow us on <a href="https://twitter.com/">twitter</a>'
+#footer: 'follow us on <a href="https://twitter.com/">twitter</a>'
+footer: ''
 
 # Build settings
 markdown: kramdown
