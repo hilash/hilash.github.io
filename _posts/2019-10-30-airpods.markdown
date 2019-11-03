@@ -1,0 +1,36 @@
+---
+layout: post
+title:  "Noise Cancellation for the poors"
+date:   2019-10-30
+categories:
+---
+
+Apple announced AirPods Pro, this time with noise cancellation feature,
+so it made me sit down and write my own noise cancellation code.
+Well, 
+
+So I want to write an app that disables the background noises, using 
+javascript, and in practicular, `Web Audio API`.
+For that, I would like to go back and implement some basic mandatory code first,
+like FFT.
+
+# How Sound Works
+
+## FFT or DFT
+
+[The Scientist and Engineer's Guide to
+Digital Signal Processing By Steven W. Smith, Ph.D.](http://www.dspguide.com/) is by far the greatest souce for learning about digital signal processing. I learn from 10 years ago while I had zero knowledge about the subject, and now after reading throught it again I can see how clear it is.
+
+So this book is a really good start for someone who would like to dive in and not 
+# How Noise Cancellation Works
+The sound we hear is a wave.
+Since waves can be accumulated, 
+In the most basic way, noise cancellation works by
+adding the negative amplitude to the original wave's amplutude, and there fore cancelling it.
+
+There are few problems with that:
+1. Processing time - how long does it take from the moment i 
+sample the wave to produce the opposite wave.
+
+# Advanced Method
+
