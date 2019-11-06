@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Beam Reflections inside a Rectangle</title>
+<title>FFT Simulator</title>
 
 <style>
     @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono&display=swap');
@@ -9,14 +9,16 @@
 
 </head>
 <body style="font-family: 'Share Tech Mono', monospace;">
-<h1>Noise Cancellation</h1>
-<button name="toggleButton" onclick="toggleSound()">Start / Stop</button>
+<h1>FFT Simulator</h1>
 <br/>
-<br/>
-<canvas class="visualizer" width="640" height="100" style="background-color:whitesmoke;"></canvas> 
+<canvas class="time-domain" width="640" height="100" style="background-color:whitesmoke;"></canvas> 
 <br/>
 <canvas class="frequency-domain" width="640" height="100" style="background-color:whitesmoke;"></canvas> 
-<script src="noise-cancellation.js"></script>
+<p><button onclick="sample.toggle()">Play/pause</button></p>
 
+<script src="fft-simulator.js"></script>
+<script>
+    var sample = new OscillatorFFT();
+</script>
 </body>
 </html>
