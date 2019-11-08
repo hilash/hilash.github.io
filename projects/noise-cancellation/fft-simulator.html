@@ -9,16 +9,81 @@
 
 </head>
 <body style="font-family: 'Share Tech Mono', monospace;">
-<h1>FFT Simulator</h1>
+<h1>Sound and Frequencies Visualizer using Web Audio AP</h1>
+<p>
+    This simulation is using 
+    <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API">Web Audio API</a> 
+    inorder to generate a simple sound wave using the 
+    <a href="https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode">OscillatorNode</a>.
+    <br/>
+    Using the parameters below you can define the shape, frequency and detune of the sound wave.
+    <br/>
+    The sound wave appears on the <b>Time Domain</b> graph.
+    <br/>
+    <br/>
+    Using the <a href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode">AnalyserNode</a>, 
+    we can obtain the waveform FFT decomposition - meaning the frequencies that alltogether create the soundwave.
+    <br/>
+    The frequncies appear on the <b>Frequency Domain</b> graph.
+    
+</p>
 <br/>
-<canvas class="time-domain" width="640" height="100" style="background-color:whitesmoke;"></canvas> 
-<br/>
-<canvas class="frequency-domain" width="640" height="100" style="background-color:whitesmoke;"></canvas> 
-<p><button onclick="sample.toggle()">Play/pause</button></p>
+<div style="width: 800px">
+    <div>
+        Time Domain
+        <br/>
+        <canvas class="time-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas> 
+        <br/>
+        <p style="text-align: center;">&#8595; DFT</p>
+        <br/>
+        Frequency Domain
+        <br/>
+        <canvas class="frequency-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas> 
+    </div>
+    <br/>
+    <br/>
+    <table style="width:100%">
+        <tr>
+          <td><b>Frequency</b></td>
+          <td><input id="frequency" type="range" min="0" max="20000" step="1" value="440"
+            oninput="sample.changeFrequency(this.value); updateTextInput(this.value);"
+            style="width: 500px">
+            <b id="frequency-text">440</b> Hz</td>
+        </tr>
+        <tr>
+          <td><b>Detune</b></td>
+          <td><input id="detune" type="range" min="-100" max="100" step="5" value="0"
+            oninput="sample.changeDetune(this.value);"
+            style="width: 500px"></td>
+        </tr>
+        <tr>
+            <td><b>Wave Shape</b></td>
+            <td>
+                <input type="radio" name="ir" value="0" class="effect" checked
+                onclick="sample.changeType('sine')">Sine</input>
+                <input type="radio" name="ir" value="1" class="effect"
+                onclick="sample.changeType('square')">Square</input>
+                <input type="radio" name="ir" value="2" class="effect"
+                onclick="sample.changeType('sawtooth')">Sawtooth</input>
+                <input type="radio" name="ir" value="3" class="effect"
+                onclick="sample.changeType('triangle')">Triangle</input>
+            </td>
+          </tr>
+      </table>
+
+    <p><button onclick="sample.toggle()">Play/pause</button></p>
+        
+</div>
+
+
 
 <script src="fft-simulator.js"></script>
 <script>
     var sample = new OscillatorFFT();
+
+    function updateTextInput(val) {
+          document.getElementById("frequency-text").textContent = val;
+        }
 </script>
 </body>
 </html>
