@@ -5,11 +5,16 @@
 
 <style>
     @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono&display=swap');
+    .round-corners {
+        border-radius: 25px;
+        padding: 20px;  
+        }
+
 </style>
 
 </head>
 <body style="font-family: 'Share Tech Mono', monospace;">
-<h1>Sound and Frequencies Visualizer using Web Audio AP</h1>
+<h1>Sound and Frequencies Visualizer using Web Audio API</h1>
 <p>
     This simulation is using 
     <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API">Web Audio API</a> 
@@ -28,7 +33,7 @@
     
 </p>
 <br/>
-<div style="width: 800px">
+<div class="round-corners" style="width: 800px; background: #ADE9DB;">
     <div>
         Time Domain
         <br/>
@@ -42,48 +47,64 @@
     </div>
     <br/>
     <br/>
-    <table style="width:100%">
+    <table class="round-corners" style="width:100%; background: #E1FFF8;" >
         <tr>
-          <td><b>Frequency</b></td>
-          <td><input id="frequency" type="range" min="0" max="20000" step="1" value="440"
-            oninput="sample.changeFrequency(this.value); updateTextInput(this.value);"
-            style="width: 500px">
-            <b id="frequency-text">440</b> Hz</td>
-        </tr>
-        <tr>
-          <td><b>Detune</b></td>
-          <td><input id="detune" type="range" min="-100" max="100" step="5" value="0"
-            oninput="sample.changeDetune(this.value);"
-            style="width: 500px"></td>
-        </tr>
-        <tr>
-            <td><b>Wave Shape</b></td>
+            <td><b>Audio Source</b></td>
             <td>
-                <input type="radio" name="ir" value="0" class="effect" checked
-                onclick="sample.changeType('sine')">Sine</input>
-                <input type="radio" name="ir" value="1" class="effect"
-                onclick="sample.changeType('square')">Square</input>
-                <input type="radio" name="ir" value="2" class="effect"
-                onclick="sample.changeType('sawtooth')">Sawtooth</input>
-                <input type="radio" name="ir" value="3" class="effect"
-                onclick="sample.changeType('triangle')">Triangle</input>
+                <input type="radio" name="audio-source" value="oscillator" checked
+                onclick="updateSourceParameters(this.value);">Oscillator [Computer Generator Waveform]</input>
+                <br/>
+                <input type="radio" name="audio-source" value="microphone"
+                onclick="updateSourceParameters(this.value);">Microphone</input>
             </td>
-          </tr>
+        </tr>
+
+            <tr class="source-params">
+                <td><b>Frequency</b></td>
+                <td><input id="frequency" type="range" min="0" max="20000" step="1" value="440"
+                    oninput="simulator.frequency = this.value; updateTextInput(this.value);"
+                    style="width: 500px">
+                    <b id="frequency-text">440</b> Hz</td>
+            </tr>
+            <tr class="source-params">
+                <td><b>Detune</b></td>
+                <td><input id="detune" type="range" min="-100" max="100" step="5" value="0"
+                    oninput="simulator.detune = this.value;"
+                    style="width: 500px"></td>
+            </tr>
+            <tr class="source-params">
+                <td><b>Wave Shape</b></td>
+                <td>
+                    <input type="radio" name="wave-shape" value="0" class="effect" checked
+                    onclick="simulator.wavetype = 'sine';">Sine</input>
+                    <input type="radio" name="wave-shape" value="1" class="effect"
+                    onclick="simulator.wavetype = 'square';">Square</input>
+                    <input type="radio" name="wave-shape" value="2" class="effect"
+                    onclick="simulator.wavetype = 'sawtooth';">Sawtooth</input>
+                    <input type="radio" name="wave-shape" value="3" class="effect"
+                    onclick="simulator.wavetype = 'triangle';">Triangle</input>
+                </td>
+            </tr>
       </table>
 
-    <p><button onclick="sample.toggle()">Play/pause</button></p>
+    <p><button onclick="simulator.toggle()">Play/pause</button></p>
         
 </div>
 
-
-
 <script src="fft-simulator.js"></script>
 <script>
-    var sample = new OscillatorFFT();
+    var simulator = new OscillatorFFT();
 
     function updateTextInput(val) {
-          document.getElementById("frequency-text").textContent = val;
+        document.getElementById("frequency-text").textContent = val;
+    }
+    function updateSourceParameters(value) {
+        simulator.source = value;
+        const x = document.getElementsByClassName("source-params");
+        for (let i = 0; i < x.length; i++) {
+            x[i].style.display = (value == 'oscillator'? 'table-row':'none');
         }
+    }
 </script>
 </body>
 </html>

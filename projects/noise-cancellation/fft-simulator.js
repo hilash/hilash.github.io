@@ -1,79 +1,114 @@
-audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+var drawGraph = import("./graph.js");
+var initUserMediaFromBrowser = import("./audio-utils.js");
 
-drawGraph = (canvas, canvasCtx, bufferLength, dataArray, flip=false) => {
-    canvasCtx.fillStyle = "WhiteSmoke";
-    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-  
-    canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = "black";
-    canvasCtx.beginPath();
-  
-    var sliceWidth = (canvas.width * 1.0) / bufferLength;
-    var x = 0;
-    for (var i = 0; i < bufferLength; i++) {
-      var v = dataArray[i] / 128.0;
-      var y = (v * canvas.height) / 2.0;
-      if (flip) {
-        y = canvas.height - y;
-      }
-      if (i === 0) {
-        canvasCtx.moveTo(x, y);
-      } else {
-        canvasCtx.lineTo(x, y);
-      }
-      x += sliceWidth;
-    }
-  
-    canvasCtx.lineTo(canvas.width, canvas.height / 2);
-    canvasCtx.stroke();
-  };
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 class OscillatorFFT {
   constructor() {
     this.canvasTime = document.querySelector(".time-domain");
     this.canvasFrequency = document.querySelector(".frequency-domain");
+    this._source = 'oscillator';
     this.isPlaying = false;
+
+    this._oscillatorType = "sine";
+    this._oscillatorFrequency = 440;
+    this._oscillatorDetune = 0;
+
+    this.microphoneStream = null;
+    this.microphone = null;
   }
 
-  play = () => {
-    this.oscillator = audioCtx.createOscillator();
-    this.oscillator.type = 'sine'
-    this.oscillator.frequency.value = 440;
+  async play() {
     this.analyser = audioCtx.createAnalyser();
-    this.oscillator.connect(this.analyser);
+
+    switch (this._source) {
+      case 'oscillator':
+        // create oscillator (produces soundwave)
+        this.oscillator = audioCtx.createOscillator();
+        this.oscillator.type = this._oscillatorType;
+        this.oscillator.frequency.value = this._oscillatorFrequency
+        this.oscillator.detune.value = this._oscillatorDetune;
+      
+        // connect audio nodes and start
+        this.oscillator.connect(this.analyser);
+        this.oscillator.start(0);
+        break;
+
+      case 'microphone': 
+        initUserMediaFromBrowser();
+        if (!navigator.mediaDevices.getUserMedia){
+          console.log('getUserMedia not supported on your browser!');
+          break;
+        }
+        let constraints = { audio: true };
+        this.microphoneStream = await navigator.mediaDevices.getUserMedia(constraints);
+        this.microphone = audioCtx.createMediaStreamSource(this.microphoneStream);
+        this.microphone.connect(this.analyser);
+        break;
+    }
+
+    // connect the analazer, for FFT display
     this.analyser.connect(audioCtx.destination);
-    this.oscillator[this.oscillator.start ? "start" : "noteOn"](0);
-    this.visualize()
-  };
+    this.visualize();
+  }
 
-  stop = () => {
-    this.oscillator.stop(0);
-  };
-  
-  toggle = () => {
-    (this.isPlaying ? this.stop() : this.play());
+  stop() {
+    switch (this._source) {
+      case 'oscillator':
+        this.oscillator.stop();
+        break;
+      case 'microphone':
+        this.microphoneStream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+        this.microphone.disconnect();
+        break;
+    }
+    window.cancelAnimationFrame(this.drawHandler);
+  }
+
+  toggle() {
+    if (this.isPlaying) {
+      this.stop();
+    } else {
+      this.play();
+    }
     this.isPlaying = !this.isPlaying;
-  };
+  }
 
-  changeFrequency = (value) => {
+  set source(value) {
+    if (this.isPlaying) {
+      this.stop();
+      this._source = value;
+      this.play();
+    }
+    else {
+      this._source = value;
+    }
+  }
+
+  set frequency(value) {
+    this._oscillatorFrequency = value; // can have a "update oscillator" func.
     this.oscillator.frequency.value = value;
-  };
-  
-  changeDetune = (value) => {
-    this.oscillator.detune.value = value;
-  };
-  
-  changeType = (type) =>{
-    this.oscillator.type = type;
-  };
+  }
 
-  visualize = () => {
+  set detune(value) {
+    this._oscillatorDetune = value;
+    this.oscillator.detune.value = value;
+  }
+
+  set wavetype(value) {
+    this._oscillatorType = value;
+    this.oscillator.type = value;
+  }
+
+  visualize() {
     this.analyser.fftSize = 2048;
     var timeBufferLength = this.analyser.fftSize;
     var frequencyBufferLength = this.analyser.frequencyBinCount;
     var timeBuffer = new Uint8Array(timeBufferLength);
     var frequencyBuffer = new Uint8Array(frequencyBufferLength);
-  
+
     var canvasCtxTime = this.canvasTime.getContext("2d");
     var canvasCtxFrequency = this.canvasFrequency.getContext("2d");
   
@@ -81,7 +116,7 @@ class OscillatorFFT {
     canvasCtxFrequency.clearRect(0, 0, this.canvasFrequency.width, this.canvasFrequency.height);
   
     this.draw = function() {
-      requestAnimationFrame(this.draw);
+      this.drawHandler = requestAnimationFrame(this.draw);
       this.analyser.getByteTimeDomainData(timeBuffer);
       this.analyser.getByteFrequencyData(frequencyBuffer);
       drawGraph(this.canvasTime, canvasCtxTime, timeBufferLength, timeBuffer);
