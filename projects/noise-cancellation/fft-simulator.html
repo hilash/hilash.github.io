@@ -1,110 +1,118 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>FFT Simulator</title>
+    <title>FFT Simulator</title>
 
-<style>
-    @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono&display=swap');
-    .round-corners {
-        border-radius: 25px;
-        padding: 20px;  
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono&display=swap');
+
+        .round-corners {
+            border-radius: 25px;
+            padding: 20px;
         }
-
-</style>
+    </style>
 
 </head>
+
 <body style="font-family: 'Share Tech Mono', monospace;">
-<h1>Sound and Frequencies Visualizer using Web Audio API</h1>
-<p>
-    This simulation is using 
-    <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API">Web Audio API</a> 
-    inorder to generate a simple sound wave using the 
-    <a href="https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode">OscillatorNode</a>.
-    <br/>
-    Using the parameters below you can define the shape, frequency and detune of the sound wave.
-    <br/>
-    The sound wave appears on the <b>Time Domain</b> graph.
-    <br/>
-    <br/>
-    Using the <a href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode">AnalyserNode</a>, 
-    we can obtain the waveform FFT decomposition - meaning the frequencies that alltogether create the soundwave.
-    <br/>
-    The frequncies appear on the <b>Frequency Domain</b> graph.
-    
-</p>
-<br/>
-<div class="round-corners" style="width: 800px; background: #ADE9DB;">
-    <div>
-        Time Domain
-        <br/>
-        <canvas class="time-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas> 
-        <br/>
-        <p style="text-align: center;">&#8595; DFT</p>
-        <br/>
-        Frequency Domain
-        <br/>
-        <canvas class="frequency-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas> 
-    </div>
-    <br/>
-    <br/>
-    <table class="round-corners" style="width:100%; background: #E1FFF8;" >
-        <tr>
-            <td><b>Audio Source</b></td>
-            <td>
-                <input type="radio" name="audio-source" value="oscillator" checked
-                onclick="updateSourceParameters(this.value);">Oscillator [Computer Generator Waveform]</input>
-                <br/>
-                <input type="radio" name="audio-source" value="microphone"
-                onclick="updateSourceParameters(this.value);">Microphone</input>
-            </td>
-        </tr>
+    <h1>Sound and Frequencies Visualizer using Web Audio API</h1>
+    <p>
+        This simulation is using
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API">Web
+            Audio API</a>
+        inorder to display a sound wave and its frequencies.
+        <br />the source can be one of the following:
+        <ul>
+            <li>Microphone</li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode">OscillatorNode</a>
+                - which generates a periodic waveform, such as a sine wave. Using the parameters below you can define
+                the shape, frequency and detune of the sound wave.
+                <br />
+            </li>
+        </ul>
+        <br />
+        The waveform appears on the <b>Time Domain</b> graph.
+        <br />
+        <br />
+        Using the <a href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode">AnalyserNode</a>,
+        we can obtain the waveform FFT decomposition - meaning the frequencies that alltogether create the soundwave.
+        <br />
+        The frequncies appear on the <b>Frequency Domain</b> graph.
+
+    </p>
+    <br />
+    <div class="round-corners" style="width: 800px; background: #ADE9DB;">
+        <div>
+            Time Domain
+            <br />
+            <canvas class="time-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas>
+            <br />
+            <p style="text-align: center;">&#8595; DFT</p>
+            <br />
+            Frequency Domain
+            <br />
+            <canvas class="frequency-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas>
+        </div>
+        <br />
+        <br />
+        <table class="round-corners" style="width:100%; background: #E1FFF8;">
+            <tr>
+                <td><b>Audio Source</b></td>
+                <td>
+                    <input type="radio" name="audio-source" value="oscillator" checked
+                        onclick="updateSourceParameters(this.value);" />Oscillator [Computer Generator Waveform]
+                    <br />
+                    <input type="radio" name="audio-source" value="microphone"
+                        onclick="updateSourceParameters(this.value);" />Microphone
+                </td>
+            </tr>
 
             <tr class="source-params">
                 <td><b>Frequency</b></td>
                 <td><input id="frequency" type="range" min="0" max="20000" step="1" value="440"
-                    oninput="simulator.frequency = this.value; updateTextInput(this.value);"
-                    style="width: 500px">
+                        oninput="simulator.frequency = this.value; updateTextInput(this.value);" style="width: 500px">
                     <b id="frequency-text">440</b> Hz</td>
             </tr>
             <tr class="source-params">
                 <td><b>Detune</b></td>
                 <td><input id="detune" type="range" min="-100" max="100" step="5" value="0"
-                    oninput="simulator.detune = this.value;"
-                    style="width: 500px"></td>
+                        oninput="simulator.detune = this.value;" style="width: 500px"></td>
             </tr>
             <tr class="source-params">
                 <td><b>Wave Shape</b></td>
                 <td>
                     <input type="radio" name="wave-shape" value="0" class="effect" checked
-                    onclick="simulator.wavetype = 'sine';">Sine</input>
+                        onclick="simulator.wavetype = 'sine';" />Sine
                     <input type="radio" name="wave-shape" value="1" class="effect"
-                    onclick="simulator.wavetype = 'square';">Square</input>
+                        onclick="simulator.wavetype = 'square';" />Square
                     <input type="radio" name="wave-shape" value="2" class="effect"
-                    onclick="simulator.wavetype = 'sawtooth';">Sawtooth</input>
+                        onclick="simulator.wavetype = 'sawtooth';" />Sawtooth
                     <input type="radio" name="wave-shape" value="3" class="effect"
-                    onclick="simulator.wavetype = 'triangle';">Triangle</input>
+                        onclick="simulator.wavetype = 'triangle';" />Triangle
                 </td>
             </tr>
-      </table>
+        </table>
+        <p>
+            <button class="round-corners" style="background:orange;" onclick="simulator.toggle()">Play/Pause</button>
+        </p>
+    </div>
 
-    <p><button onclick="simulator.toggle()">Play/pause</button></p>
-        
-</div>
+    <script src="fft-simulator.js"></script>
+    <script>
+        var simulator = new FFTSimulator();
 
-<script src="fft-simulator.js"></script>
-<script>
-    var simulator = new OscillatorFFT();
-
-    function updateTextInput(val) {
-        document.getElementById("frequency-text").textContent = val;
-    }
-    function updateSourceParameters(value) {
-        simulator.source = value;
-        const x = document.getElementsByClassName("source-params");
-        for (let i = 0; i < x.length; i++) {
-            x[i].style.display = (value == 'oscillator'? 'table-row':'none');
+        function updateTextInput(val) {
+            document.getElementById("frequency-text").textContent = val;
         }
-    }
-</script>
+        function updateSourceParameters(value) {
+            simulator.source = value;
+            const x = document.getElementsByClassName("source-params");
+            for (let i = 0; i < x.length; i++) {
+                x[i].style.display = (value == 'oscillator' ? 'table-row' : 'none');
+            }
+        }
+    </script>
 </body>
+
 </html>

@@ -1,172 +1,145 @@
-var isPlaying = false;
-var useNoiseReducer = false;
+//https://www.mathworks.com/videos/active-noise-control-from-modeling-to-real-time-prototyping-1561451814853.html
+//https://iopscience.iop.org/article/10.1088/1757-899X/308/1/012039/pdf
 
-var audioCtx;
-var source;
-var stream;
-var analyser;
+//var drawGraph = import("./graph.js");
+var { clearBackground, drawLine, drawGraph } = import("./graph.js");
+var initUserMediaFromBrowser = import("./audio-utils.js");
 
-// set up canvas context for visualizer
-var drawVisual;
-var timeCanvas = document.querySelector(".visualizer");
-var frequencyCanvas = document.querySelector(".frequency-domain");
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-function getUserMediaFromBrowser() {
-  // init navigator.mediaDevices.getUserMedia if supported.
+class NoiseCancellationSimulator {
+  constructor() {
+    this._canvas = document.querySelector(".noise-cancellation-canvas");
+    this.isPlaying = false;
+    this._outputWave = true;
+    this._outputAntiWave = true;
+    this._antiWaveAmplitude = 100.0; // Reduction level
+    this._antiWavePhase = 0;
 
-  // Older browsers might not implement mediaDevices at all, so we set an empty object first
-  if (navigator.mediaDevices === undefined) {
-    navigator.mediaDevices = {};
+    this._microphoneStream = null;
+    this._microphone = null;
   }
-  // Some browsers partially implement mediaDevices. We can't just assign an object
-  // with getUserMedia as it would overwrite existing properties.
-  // Here, we will just add the getUserMedia property if it's missing.
-  if (navigator.mediaDevices.getUserMedia === undefined) {
-    navigator.mediaDevices.getUserMedia = function(constraints) {
-      // First get ahold of the legacy getUserMedia, if present
-      var getUserMedia =
-        navigator.webkitGetUserMedia ||
-        navigator.mozGetUserMedia ||
-        navigator.msGetUserMedia;
 
-      // Some browsers just don't implement it - return a rejected promise with an error
-      // to keep a consistent interface
-      if (!getUserMedia) {
-        return Promise.reject(
-          new Error("getUserMedia is not implemented in this browser")
-        );
-      }
+  async play() {
+    this.analyser1 = audioCtx.createAnalyser();
+    this.analyser2 = audioCtx.createAnalyser();
+   
+    await this._initMicrophone();
+    await this._initNoiseReducer();
+    
+    this._microphone.connect(this.noiseReducer);
+    this.noiseReducer.connect(audioCtx.destination)
 
-      // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-      return new Promise(function(resolve, reject) {
-        getUserMedia.call(navigator, constraints, resolve, reject);
-      });
-    };
-  }
-}
-
-async function init() {
-  // set up forked web audio context, for multiple browsers
-  // window. is needed otherwise Safari explodes
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-  //set up the different audio nodes we will use for the app
-  analyser = audioCtx.createAnalyser();
-  analyser.minDecibels = -90;
-  analyser.maxDecibels = -10;
-  analyser.smoothingTimeConstant = 0.85;
-
-  getUserMediaFromBrowser();
-
-  //
-  //main block for doing the audio recording
-  if (navigator.mediaDevices.getUserMedia) {
-    try {
-      console.log("getUserMedia supported.");
-      var constraints = { audio: true };
-      let stream = await navigator.mediaDevices.getUserMedia(constraints);
-      source = audioCtx.createMediaStreamSource(stream);
-       if (useNoiseReducer) {
-            await audioCtx.audioWorklet.addModule('noise-cancellation-processor.js')
-            const noisereducer = new AudioWorkletNode(audioCtx, 'noise-cancellation-processor');
-            source.connect(noisereducer);
-            noisereducer.connect(analyser);
-            analyser.connect(audioCtx.destination); // if i want to play this sound
-       }
-       else {
-           source.connect(analyser);
-           analyser.connect(audioCtx.destination); // if i want to play this sound
-       }
-      visualize();
-    } catch (err) {
-      console.log("The following gUM error occured: " + err);
+    if (this._outputWave) {
+      this._microphone.connect(this.analyser1);
     }
-  } else {
-    console.log("getUserMedia not supported on your browser!");
+
+    if (this._outputAntiWave) {
+      this.noiseReducer.connect(this.analyser2);
+    }
+    this.visualize();
   }
-}
 
-function visualize() {
-  analyser.fftSize = 2048;
-  var timeBufferLength = analyser.fftSize;
-  var frequencyBufferLength = analyser.frequencyBinCount;
-  var timeArray = new Uint8Array(timeBufferLength);
-  var frequencyArray = new Uint8Array(frequencyBufferLength);
-
-  var timeCanvasCtx = timeCanvas.getContext("2d");
-  var frequencyCanvasCtx = frequencyCanvas.getContext("2d");
-
-  timeCanvasCtx.clearRect(0, 0, timeCanvas.width, timeCanvas.height);
-  frequencyCanvasCtx.clearRect(0, 0, frequencyCanvasCtx.width, frequencyCanvasCtx.height);
-
-  var draw = function() {
-    drawVisual = requestAnimationFrame(draw);
-    analyser.getByteTimeDomainData(timeArray);
-    analyser.getByteFrequencyData(frequencyArray);
-    drawGraph(timeCanvas, timeCanvasCtx, timeBufferLength, timeArray);
-    drawBinsGraph(
-      frequencyCanvas,
-      frequencyCanvasCtx,
-      frequencyBufferLength,
-      frequencyArray
+  async _initMicrophone(){
+    initUserMediaFromBrowser();
+    if (!navigator.mediaDevices.getUserMedia) {
+      console.log("getUserMedia not supported on your browser!");
+    }
+    let constraints = { audio: true };
+    this._microphoneStream = await navigator.mediaDevices.getUserMedia(
+      constraints
     );
-  };
-  draw();
-}
+    this._microphone = audioCtx.createMediaStreamSource(
+      this._microphoneStream
+    );
+  }
 
-var drawGraph = function(canvas, canvasCtx, bufferLength, dataArray) {
-  canvasCtx.fillStyle = "WhiteSmoke";
-  canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+  async _initNoiseReducer() {
+    await audioCtx.audioWorklet.addModule("/projects/noise-cancellation/noise-cancellation-processor.js");
+    this.noiseReducer = new AudioWorkletNode(
+      audioCtx,
+      "noise-cancellation-processor"
+    );
 
-  canvasCtx.lineWidth = 1.5;
-  canvasCtx.strokeStyle = "purple";
-  canvasCtx.beginPath();
+    this.antiWaveAmplitude = this._antiWaveAmplitude;
+    this.antiWavePhase = this._antiWavePhase;
+  }
 
-  var sliceWidth = (canvas.width * 1.0) / bufferLength;
-  var x = 0;
-  for (var i = 0; i < bufferLength; i++) {
-    var v = dataArray[i] / 128.0;
-    var y = (v * canvas.height) / 2.0;
-    if (i === 0) {
-      canvasCtx.moveTo(x, y);
+  stop() {
+    this._disconnectMicrophone();
+    this._disconnectNoiseReducer();
+    window.cancelAnimationFrame(this.drawHandler);
+  }
+
+  _disconnectMicrophone(){
+    this._microphoneStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+    this._microphone.disconnect();
+  }
+
+  _disconnectNoiseReducer(){
+    this.noiseReducer.disconnect();
+  }
+
+  toggle() {
+    if (this.isPlaying) {
+      this.stop();
     } else {
-      canvasCtx.lineTo(x, y);
+      this.play();
     }
-    x += sliceWidth;
+    this.isPlaying = !this.isPlaying;
   }
 
-  canvasCtx.lineTo(canvas.width, canvas.height / 2);
-  canvasCtx.stroke();
-};
-
-var drawBinsGraph = function(canvas, canvasCtx, bufferLength, dataArray) {
-  canvasCtx.fillStyle = "WhiteSmoke";
-  canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-  var grd = canvasCtx.createLinearGradient(0, 0, 0, canvas.height);
-  grd.addColorStop(0, "pink");
-  grd.addColorStop(1, "purple");
-
-  var sliceWidth = (canvas.width * 1.0) / bufferLength;
-  var x = 0;
-  for (var i = 0; i < bufferLength; i++) {
-    var v = dataArray[i] / 128.0;
-    var y2 = (v * canvas.height) / 1.0;
-    var y = canvas.height - y2;
-
-    canvasCtx.fillStyle = grd;
-    canvasCtx.fillRect(x, y, sliceWidth, y2);
-    x += sliceWidth;
+  set outputWave(value) {
+    this._outputWave = value;
+    if (this.isPlaying) {
+      this.stop();
+      this.play();
+    }
   }
-};
 
-async function toggleSound() {
-  if (isPlaying) {
-    isPlaying = false;
-    audioCtx.close();
-    window.cancelAnimationFrame(drawVisual);
-  } else {
-    isPlaying = true;
-    await init();
+  set outputAntiWave(value) {
+    this._outputAntiWave = value;
+    if (this.isPlaying) {
+      this.stop();
+      this.play();
+    }
+  }
+
+  set antiWavePhase(value) {
+    this._antiWavePhase = value
+    const phaseParam =this.noiseReducer.parameters.get('phase')
+    phaseParam.setValueAtTime(this._antiWavePhase, audioCtx.currentTime)
+  }
+
+  set antiWaveAmplitude(value) {
+    this._antiWaveAmplitude = value
+    const amplitudeParam =this.noiseReducer.parameters.get('amplitude')
+    amplitudeParam.setValueAtTime(this._antiWaveAmplitude, audioCtx.currentTime)
+  }
+
+  visualize() {
+    this.analyser1.fftSize = 2048;
+    this.analyser2.fftSize = 2048;
+    var bufferLength = this.analyser1.fftSize;
+    var buffer1 = new Uint8Array(bufferLength);
+    var buffer2 = new Uint8Array(bufferLength);
+
+    clearBackground(this._canvas);
+
+    this.draw = function() {
+      this.drawHandler = requestAnimationFrame(this.draw);
+      clearBackground(this._canvas);
+      if (this._outputWave) {
+        this.analyser1.getByteTimeDomainData(buffer1);
+        drawLine(this._canvas, bufferLength, buffer1, false, "blue");
+      }
+      if (this._outputAntiWave) {
+        this.analyser2.getByteTimeDomainData(buffer2);
+        drawLine(this._canvas, bufferLength, buffer2, false, "red");
+      }
+    }.bind(this); // nice solution for requestAnimationFrame + this:  https://stackoverflow.com/a/32834390
+    this.draw();
   }
 }

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Waves Interference Simulator</title>
+
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono&display=swap');
+    .round-corners {
+        border-radius: 25px;
+        padding: 20px;  
+        }
+
+</style>
+
+</head>
+<body style="font-family: 'Share Tech Mono', monospace;">
+<h1>Wave interference using Web Audio API</h1>
+<br/>
+<div class="round-corners" style="width: 800px; background: #ADE9DB;">
+    <div>
+        Time Domain
+        <br/>
+        <canvas id="waves-canvas" width="800" height="100" style="background-color:whitesmoke;"></canvas> 
+        <br/>
+    </div>
+    <br/>
+    <br/>
+    <table class="round-corners" style="width:100%; background: #E1FFF8;" >
+        <tr>
+            <td><b>Audio Source</b></td>
+            <td>
+                Oscillator [Computer Generated Waveform]
+            </td>
+        </tr>
+
+        <tr>
+            <td><b>Audio Output</b></td>
+                <td>
+                    <input type="checkbox" id="checkbox-wave" onclick="displayWaves()" checked> Oscillator Wave
+                    <br/>
+                    <input type="checkbox" id="checkbox-anti-wave" onclick="displayWaves()" checked> Anti-Phase Oscillator Wave
+                </td>
+            </tr>
+
+        <tr class="source-params">
+            <td><b>Frequency</b></td>
+            <td><input id="frequency" type="range" min="0" max="20000" step="1" value="440"
+                oninput="simulator.frequency = this.value; updateTextInput(this.value);"
+                style="width: 500px">
+                <b id="frequency-text">364</b> Hz</td>
+        </tr>
+        <tr class="source-params">
+            <td><b>Detune</b></td>
+            <td><input id="detune" type="range" min="-100" max="100" step="1" value="-100"
+                oninput="simulator.detune = this.value;"
+                style="width: 500px"></td>
+        </tr>
+        <tr class="source-params">
+            <td><b>Inverted Wave Phase Shift</b></td>
+            <td><input id="phase" type="range" min="0" max="180" step="1" value="0"
+                oninput="simulator.antiWavePhase = this.value;"
+                style="width: 500px"></td>
+        </tr>
+        <tr class="source-params">
+            <td><b>Wave Shape</b></td>
+            <td>
+                <input type="radio" name="wave-shape" value="0" class="effect" checked
+                onclick="simulator.wavetype = 'sine';">Sine</input>
+                <input type="radio" name="wave-shape" value="1" class="effect"
+                onclick="simulator.wavetype = 'square';">Square</input>
+                <input type="radio" name="wave-shape" value="2" class="effect"
+                onclick="simulator.wavetype = 'sawtooth';">Sawtooth</input>
+                <input type="radio" name="wave-shape" value="3" class="effect"
+                onclick="simulator.wavetype = 'triangle';">Triangle</input>
+            </td>
+        </tr>
+      </table>
+
+      <p><button class="round-corners" style="background:orange;"
+        onclick="simulator.toggle()">Play/pause</button></p>        
+</div>
+
+<script src="wave-interference-simulator.js"></script>
+<script>
+    var simulator = new WavesInterferenceSimulator();
+
+    function updateTextInput(val) {
+        document.getElementById("frequency-text").textContent = val;
+    }
+    function updateSourceParameters(value) {
+        simulator.source = value;
+        const x = document.getElementsByClassName("source-params");
+        for (let i = 0; i < x.length; i++) {
+            x[i].style.display = (value == 'oscillator'? 'table-row':'none');
+        }
+    }
+    function displayWaves() {
+        var checkBoxWave = document.getElementById("checkbox-wave");
+        var checkBoxAntiWave = document.getElementById("checkbox-anti-wave");
+        
+        simulator.outputWave = checkBoxWave.checked;
+        simulator.outputAntiWave = checkBoxAntiWave.checked;
+    }
+</script>
+</body>
+</html>

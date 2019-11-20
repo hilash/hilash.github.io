@@ -1,0 +1,96 @@
+
+<div>
+        <style>
+            .round-corners {
+                border-radius: 25px;
+                padding: 20px;
+            }
+        </style>
+    
+    <div class="round-corners" style="width: 800px; background: #ADE9DB;">
+            <div>
+                Time Domain
+                <br />
+                <canvas id="waves-canvas" width="800" height="100" style="background-color:whitesmoke;"></canvas>
+                <br />
+            </div>
+            <br />
+            <br />
+            <table class="round-corners" style="width:100%; background: #E1FFF8;">
+                <tr>
+                    <td><b>Audio Source</b></td>
+                    <td>
+                        Oscillator [Computer Generated Waveform]
+                    </td>
+                </tr>
+    
+                <tr>
+                    <td><b>Audio Output</b></td>
+                    <td>
+                        <input type="checkbox" id="waves-checkbox-wave" onclick="displayWaves()" checked />
+                        Oscillator Wave
+                        <br />
+                        <input type="checkbox" id="waves-checkbox-anti-wave" onclick="displayWaves()" checked />
+                        Anti-Phase Oscillator Wave
+                    </td>
+                </tr>
+    
+                <tr>
+                    <td><b>Frequency</b></td>
+                    <td>
+                        <input id="waves-frequency" type="range" min="0" max="20000" step="1" value="440"
+                            oninput="wavesSimulator.frequency = this.value; updateWavesTextInput(this.value);" style="width: 500px" />
+                        <b id="waves-frequency-text">364</b> Hz
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Detune</b></td>
+                    <td>
+                        <input id="waves-detune" type="range" min="-100" max="100" step="1" value="-100"
+                            oninput="wavesSimulator.detune = this.value;" style="width: 500px" />
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Inverted Wave Phase Shift</b></td>
+                    <td>
+                        <input id="waves-phase" type="range" min="0" max="180" step="1" value="0"
+                            oninput="wavesSimulator.antiWavePhase = this.value;" style="width: 500px" />
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Wave Shape</b></td>
+                    <td>
+                        <input type="radio" name="wave-shape" value="0" class="effect" checked
+                            onclick="wavesSimulator.wavetype = 'sine';" />Sine
+                        <input type="radio" name="wave-shape" value="1" class="effect"
+                            onclick="wavesSimulator.wavetype = 'square';" />Square
+                        <input type="radio" name="wave-shape" value="2" class="effect"
+                            onclick="wavesSimulator.wavetype = 'sawtooth';" />Sawtooth
+                        <input type="radio" name="wave-shape" value="3" class="effect"
+                            onclick="wavesSimulator.wavetype = 'triangle';" />Triangle
+                    </td>
+                </tr>
+            </table>
+    
+            <p>
+                <button class="round-corners" style="background:orange;" onclick="wavesSimulator.toggle()">Play / Pause</button>
+            </p>
+    </div>
+
+    <script src="/projects/noise-cancellation/wave-interference-simulator.js"></script>
+    <script>
+        var wavesSimulator = new WavesInterferenceSimulator();
+
+        function updateWavesTextInput(val) {
+            document.getElementById("waves-frequency-text").textContent = val;
+        }
+
+        function displayWaves() {
+            var checkBoxWave = document.getElementById("waves-checkbox-wave");
+            var checkBoxAntiWave = document.getElementById("waves-checkbox-anti-wave");
+            
+            wavesSimulator.outputWave = checkBoxWave.checked;
+            wavesSimulator.outputAntiWave = checkBoxAntiWave.checked;
+        }
+    </script>
+</div>

@@ -1,0 +1,81 @@
+
+<div>
+    <style>
+        .round-corners {
+            border-radius: 25px;
+            padding: 20px;
+        }
+    </style>
+
+    <div class="round-corners" style="width: 800px; background: #ADE9DB;">
+        <div>
+            Time Domain
+            <br />
+            <canvas class="time-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas>
+            <br />
+            <p style="text-align: center;">&#8595; DFT</p>
+            <br />
+            Frequency Domain
+            <br />
+            <canvas class="frequency-domain" width="800" height="100" style="background-color:whitesmoke;"></canvas>
+        </div>
+        <br />
+        <br />
+        <table class="round-corners" style="width:100%; background: #E1FFF8;">
+            <tr>
+                <td><b>Audio Source</b></td>
+                <td>
+                    <input type="radio" name="audio-source" value="oscillator" checked
+                        onclick="updateFftSourceParameters(this.value);" />Oscillator [Computer Generator Waveform]
+                    <br />
+                    <input type="radio" name="audio-source" value="microphone"
+                        onclick="updateFftSourceParameters(this.value);" />Microphone
+                </td>
+            </tr>
+
+            <tr class="source-params">
+                <td><b>Frequency</b></td>
+                <td><input id="frequency" type="range" min="0" max="20000" step="1" value="364"
+                        oninput="fftSimulator.frequency = this.value; updateFftTextInput(this.value);" style="width: 500px">
+                    <b id="frequency-text">364</b> Hz</td>
+            </tr>
+            <tr class="source-params">
+                <td><b>Detune</b></td>
+                <td><input id="detune" type="range" min="-100" max="100" step="5" value="0"
+                        oninput="fftSimulator.detune = this.value;" style="width: 500px"></td>
+            </tr>
+            <tr class="source-params">
+                <td><b>Wave Shape</b></td>
+                <td>
+                    <input type="radio" name="wave-shape" value="0" class="effect" checked
+                        onclick="fftSimulator.wavetype = 'sine';" />Sine
+                    <input type="radio" name="wave-shape" value="1" class="effect"
+                        onclick="fftSimulator.wavetype = 'square';" />Square
+                    <input type="radio" name="wave-shape" value="2" class="effect"
+                        onclick="fftSimulator.wavetype = 'sawtooth';" />Sawtooth
+                    <input type="radio" name="wave-shape" value="3" class="effect"
+                        onclick="fftSimulator.wavetype = 'triangle';" />Triangle
+                </td>
+            </tr>
+        </table>
+        <p>
+            <button class="round-corners" style="background:orange;" onclick="fftSimulator.toggle()">Play/Pause</button>
+        </p>
+    </div>
+
+    <script src="/projects/noise-cancellation/fft-simulator.js"></script>
+    <script>
+        var fftSimulator = new FFTSimulator();
+
+        function updateFftTextInput(val) {
+            document.getElementById("frequency-text").textContent = val;
+        }
+        function updateFftSourceParameters(value) {
+            fftSimulator.source = value;
+            const x = document.getElementsByClassName("source-params");
+            for (let i = 0; i < x.length; i++) {
+                x[i].style.display = (value == 'oscillator' ? 'table-row' : 'none');
+            }
+        }
+    </script>
+</div>

@@ -1,0 +1,72 @@
+
+<div>
+    <style>
+        .round-corners {
+            border-radius: 25px;
+            padding: 20px;
+        }
+    </style>
+
+    <div class="round-corners" style="width: 800px; background: #ADE9DB;">
+        <div>
+            Time Domain
+            <br/>
+            <canvas class="noise-cancellation-canvas" width="800" height="100" style="background-color:whitesmoke;"></canvas> 
+            <br/>
+        </div>
+        <br/>
+        <br/>
+        <table class="round-corners" style="width:100%; background: #E1FFF8;" >
+            <tr>
+                <td><b>Audio Source</b></td>
+                <td>
+                    Microphone
+                </td>
+            </tr>
+
+            <tr>
+                <td><b>Show Microphone Waveform</b></td>
+                    <td>
+                        <input type="checkbox" id="noise-cancellation-checkbox-wave" onclick="displayNoiseCancellationWaves()" checked>
+                    </td>
+            </tr>
+
+            <tr>
+                <td><b>Show Anti-Wave</b></td>
+                    <td>
+                        <input type="checkbox" id="noise-cancellation-checkbox-anti-wave" onclick="displayNoiseCancellationWaves()" checked>
+                    </td>
+            </tr>
+
+            <tr>
+                <td><b>Anti-Wave Phase Shift</b></td>
+                <td><input type="range" min="0" max="180" step="1" value="0"
+                    oninput="noiseCancellationSimulator.antiWavePhase = this.value;"
+                    style="width: 500px"></td>
+            </tr>
+
+            <tr>
+                <td><b>Anti-Wave Amplitude [0-100%]</b></td>
+                <td><input type="range" min="0" max="100" step="0.5" value="100"
+                    oninput="noiseCancellationSimulator.antiWaveAmplitude = this.value;"
+                    style="width: 500px"></td>
+            </tr>
+        </table>
+        <br/>
+        <p><button class="round-corners" style="background:orange;"
+            onclick="noiseCancellationSimulator.toggle()">Play/Pause</button></p>        
+    </div>
+
+    <script src="/projects/noise-cancellation/noise-cancellation.js"></script>
+    <script>
+        var noiseCancellationSimulator = new NoiseCancellationSimulator();
+
+        function displayNoiseCancellationWaves() {
+            var checkBoxWave = document.getElementById("noise-cancellation-checkbox-wave");
+            var checkBoxAntiWave = document.getElementById("noise-cancellation-checkbox-anti-wave");
+            
+            noiseCancellationSimulator.outputWave = checkBoxWave.checked;
+            noiseCancellationSimulator.outputAntiWave = checkBoxAntiWave.checked;
+        }
+    </script>
+</div>
