@@ -16,6 +16,7 @@ Apple recently announced AirPods Pro, this time with noise cancellation feature 
 Well, I know it can’t be done only by software due to physical limitations (which I will explain later), but playing around with audio is always fun.
 So I want to write an app that disables the background noises, using javascript, and in particular, `Web Audio API`.
 For that, I would like to go back and implement some basic mandatory code first and go over some basic audio processing how-to.
+Use **Chrome** for the best compatibility.
 
 ## FFT
 [The Scientist and Engineer's Guide to Digital Signal Processing By Steven W. Smith, Ph.D.](http://www.dspguide.com/) is by far the greatest source for learning about digital signal processing. I learned from 10 years ago while I had zero knowledge about the subject, and now after reading through it again, I can see how clear it is. This book is a really good start for someone who would like to dive in and explore more on that subject.
