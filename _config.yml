@@ -17,7 +17,6 @@ linkedin_username: hilashmuel
 header_pages:
   - index.md
   - about.md
-  - contact.md
 
 #footer: 'follow us on <a href="https://twitter.com/">twitter</a>'
 footer: ''
