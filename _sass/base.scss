@@ -1,12 +1,11 @@
 @charset "utf-8";
-@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:400,700');
-@import url('https://fonts.googleapis.com/css?family=PT+Mono&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Arvo|Merriweather|Oxygen+Mono|PT+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+
 
 /**
  * Style variables
  */
-$base-font-family:     'Source Code Pro', monospace !default;
+$base-font-family:     'Open Sans', sans-serif !default;
 $base-font-size:       16px !default;
 $mobile-font-size:     12px !default;
 $base-line-height:     1.5 !default;
@@ -17,12 +16,20 @@ $container-max-width:  800px !default;
  * Global
  */
 body { background-color: var(--background-color);  margin: 0 auto;  padding: 0;  font-family: $base-font-family;  font-size: $base-font-size;  color: var(--text-color);  text-align: left;  line-height: $base-line-height !important; }
-h1, h2, h3, h4, h5, h6 { font-size: $base-font-size;  margin: 0px;  margin-top: 22px;  font-weight: bold;  color: var(--text-color); }
+h1, h2, h3, h4, h5, h6 { font-size: $base-font-size;  margin: 0px;  margin-bottom: 10px; margin-top: 22px;  font-weight: bold;  color: var(--text-color); }
 p, ul, ol { margin: 0px;  color: var(--text-color); }
 a { text-decoration: underline;  color: var(--link-color); }
 a:hover { color: var(--background-color); background-color: var(--base-color); }
 .primary-text { color: var(--primary-color); }
 @media only screen and (max-device-width: 500px) { * { font-size: $mobile-font-size !important; } }
+hr {border: none; border-top: var(--border); color: #333; overflow: visible; text-align: center; height: 5px; }
+h1 { font-size: $base-font-size + 14px;}
+h2 { font-size: $base-font-size + 11px;}
+h3 { font-size: $base-font-size + 8px;}
+h4 { font-size: $base-font-size + 4px;}
+h5 { font-size: $base-font-size + 2px;}
+h6 { font-size: $base-font-size + 1px;}
+blockquote, blockquote p {color: gray;}
 /*h1:before { content: "#";  margin-right: 9px; }
 h2:before { content: "##";  margin-right: 9px; }
 h3:before { content: "###";  margin-right: 9px; }
@@ -81,7 +88,7 @@ textarea { vertical-align: top; }
  */
 // for dark mode:
 //pre { background-color: var(--background-color);  border: none;  padding: 0px;  overflow:auto;  font-size: $base-font-size;  color: rgba(255,255,255,0.65);  line-height: 1.7 !important; }
-pre { background-color: hsl(49, 68%, 94%);  border: none;  padding: 0px;  overflow:auto; color: rgb(28, 0, 32); }
+pre { background-color: #f2f7f7;  border: none;  padding: 0px;  overflow:auto; color: rgb(28, 0, 32); }
 // TODO change to variable color
 .highlight .c { color: #999988; font-style: italic } /* Comment */
 .highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
