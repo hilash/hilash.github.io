@@ -5,15 +5,16 @@ date:   2019-12-28
 categories:
 ---
 
-Let’s say you run a chat server that become extremely popular, due to the fact that Kim Kardashian decided that your incredible chat would be the new platform for her to keep in touch with her fans. All of the sudden you realise you have **[10K](http://www.kegel.com/c10k.html) concurrent connections**, all trying to talk with Kim. How would one simple machine can handle it?  
+Let’s say you run a chat server that becomes extremely popular, due to the fact that Kim Kardashian decided that your incredible chat would be the new platform for her to keep in touch with her fans. All of a sudden you realize you have **[10K](http://www.kegel.com/c10k.html) concurrent connections**, all trying to talk with Kim. How would one simple machine handle it?
+
 ![Image](/assets/images/Kim Server.png)
 We can think about it in two aspects:
-- Should we use a single thread or multiple threads? One Process or multiple?
+- Should we use a single thread or multiple threads? single Process or multiple?
 - What sort of reading mechanism we would use? Blocking IO? Non-Blocking? or maybe Demultiplexer?
  <br/>
  <br/>
 We have many options. Let’s start to cover some of them, and see where it leads us (hint: select).
-We would first start by implementing few versions of an echo server (An echo server simply replies the message it got), and than implement a chat server using the reactor pattern.
+We would first start by implementing few versions of an echo server (An echo server simply replies the message it got), and then implement a chat server using the reactor pattern.
 
 ## Contents
 {:.no_toc}
@@ -45,7 +46,7 @@ So in this implementation, the function **echo** simply blocks the thread until 
 This is extremely inefficient, due to several reasons:
 1. **Context switching threads** take precious CPU time. The more threads we have the more time we waste on switching instead of running our code. 
 2. Most of the threads would **block and do nothing** while waiting for IO, yet the CPU will continue to run, and execute the blocking threads. Waist of CPU time here, also.
-3. let’s say we got message on thread number 1000. Yet, we would have to check all threads 1-999 before (let’s say that our scheduling mechanism is by the thread number). That means we would wait a long time until we can response back to the user. That’s bad. Also, think about the case where all the previous  999 threads are just blocking and wasting our CPU time. total shame!
+3. let’s say we got  a message on thread number 1000. Yet, we would have to check all threads 1-999 before (let’s say that our scheduling mechanism is by the thread number). That means we would wait a long time until we can respond to the user. That’s bad. Also, think about the case where all the previous  999 threads are just blocking and wasting our CPU time. total shame!
 4. **threads consume space** on our limited RAM.
 
 So even though this method is really simple for the developer, since we the thread encapsulate our logic, (assuming we are avoiding all the problems multithreading is bringing to the table), it’s not efficient at all.
@@ -88,12 +89,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 <br/>
 ### Second solution: Single Threaded Busy-Waiting on Multiple Non-Blocking I/O sockets
 Since one of the issues with the previous implementation was that each thread needed to block and wait until the recv function would return with some data, let’s use another mechanism of accessing sockets: Non-Blocking sockets. 
-> In non-blocking mode, operations fail (with an error that is unfortunately system-dependent) if they cannot be completed immediately: functions from the select can be used to know when and whether a socket is available for reading or writing.
+> In non-blocking mode, operations fail (with an error that is, unfortunately, system-dependent) if they cannot be completed immediately: functions from the select can be used to know when and whether a socket is available for reading or writing.
 
 Let’s ignore the `select` mentioning and save it for later. We would also remove the threads - they are not giving us any special benefits (on the contrary, only consume more RAM and waste time on context switches).
 \
 The server below does the following:
-1. create list of sockets 
+1. create a list of sockets 
 2. loop over the sockets
     - for each non-blocking socket, try to read and write. These actions would return immediately (even if we have ready IO or we don’t)
 
@@ -103,8 +104,8 @@ The server below does the following:
 In the example below we can witness the implementation. 
 We first create a **non-blocking** server socket, that would **accept** incoming connections. It’s worth mentioning what happens in case of return without a new connection (99% of the time) - in this case, the **accept** function(or recv/send/…) raise a **BlockingIOError** Exception.
 That leads to the fact that our control flow is based on exceptions. That is a very busy busy-loop.
-After we add some connections, we would iterate over them, and try to read a message and write it back (echo). On the **recv** function, How do we distinguish the case of connection close and “no data available”? when the connection is close, recv would return empty string, b””. when there is no data available, recv would raise BlockingIOError.
-We need to remember which connections are closed and remove them before the next iteration. generally speaking removing items while still in loop can cause some problems (depending on the iterated data structure) so i would advise against it.
+After we add some connections, we would iterate over them, and try to read a message and write it back (echo). On the **recv** function, How do we distinguish the case of connection close and “no data available”? when the connection is closed, recv would return an empty string, b””. when there is no data available, recv would raise BlockingIOError.
+We need to remember which connections are closed and remove them before the next iteration. generally speaking, removing items while still in loop can cause some problems (depending on the iterated data structure) so i would advise against it.
 
 #### BusyWaitNonBlockingEchoServer.py
 {:.no_toc}
@@ -154,7 +155,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 ```  
 \
 So why is this solution still really inefficient?
-1. We would go over all of the sockets, all the time, regardless of their state. For each socket we would make at least one system call, and if we have 10K sockets, we iterate all over them, only to find a message waiting impatiently on the socket #9K. That means we are keeping incoming messages wait, and spending precious time and effort just checking the sockets state.
+1. We would go over all of the sockets, all the time, regardless of their state. For each socket, we would make at least one system call, and if we have 10K sockets, we iterate all over them, only to find a message waiting impatiently on the socket #9K. That means we are keeping incoming messages wait, and spending precious time and effort just checking the sockets state.
 2. Even though most of the time we just poll on each socket to check its condition, we constantly are using the CPU. Meaning - 99% of our CPU time will be spent polling instead of executing our server logic.  
 
 <br/>
@@ -166,7 +167,6 @@ Let’s have an introduction with **select**.
 
 ## Third solution: (Single Threaded) Synchronous Event Demultiplexer
 Its name may differ on various operating systems, but the concept is the same - When you want to monitor multiple files (pipes/sockets/…) without blocking - you call **select**.
-We first wil be covering the basic concepts. You can find the implemantation and explanation of the third solution **here**.
 
 ---
 
@@ -199,7 +199,7 @@ select() examines the I/O descriptor sets whose addresses are passed in readfds,
 `select` has 3 sets of files descriptors as inputs, and when it returns, it would change the input sets to indicate the output:
     1. `readfds` - set of files descriptor to be monitored. If any of them is **ready for read**, `select` would include it in the output set. 
     2. `writefds` - set of files descriptor to be monitored. If any of them is **ready for write**, `select` would include it in the output set. 
-    3. `errorfds` - set of files descriptor to be monitored. If any of them is **has error condition**, `select` would include it in the output set.     
+    3. `errorfds` - set of files descriptor to be monitored. If any of them is **has an error condition**, `select` would include it in the output set.     
 `select` can block until a relevant event occurs (read/write on monitor file descriptor).
 <br/>
 
@@ -216,9 +216,9 @@ Instead of `select` (that has its limitations - the number of monitored file des
 
 Python library offers us two modules that support synchronous I/O multiplexing: [`select`](https://docs.python.org/3/library/select.html) and [`selectors`](https://docs.python.org/3/library/selectors.html).
 
-while `select` is more low level and expose you to the specific `select`-family syscalls,`selectors` is a higher level module that:
+while `select` is more low level and expose you to the specific `select`-family syscalls, `selectors` is a higher level module that:
 1. Choose the best implementation on your system, roughly `epoll|kqueue|devpoll > poll > select`
-2. Defines a [`BaseSelector`](https://docs.python.org/3/library/selectors.html#selectors.BaseSelector) class, that allow to register/unregister file descriptor for the specific IO opreation we would like to monitor. Spare us the need for saving sets of read/write file descriptors. 
+2. Defines a [`BaseSelector`](https://docs.python.org/3/library/selectors.html#selectors.BaseSelector) class, that allows us to register/unregister file descriptor for the specific IO operation we would like to monitor. Spare us the need for saving sets of read/write file descriptors.  
 
 In the next sections we would implement Echo Server and Chat Server using the `selectors` module.  
 **selector.py**
@@ -901,7 +901,7 @@ reactor.run()
 ## C10K
 
 C10K was the problem we started this post with. In this problem (which [Dan Kegel Described](http://www.kegel.com/c10k.html) in 1999), we wonder how to handle 10K concurrent connections to the same server. There are many options to deal with this, some we've covered in this post: single/multi-threaded? single/multi-process? blocking/non-blocking sockets? create a thread/process for each request? move some code to the kernel?  
-Kegel in his paper survies the pro's and con's of each strategy, and explains how to configure the operating system and write code to support thousands of clients.
+Kegel in his paper states the pro's and con's of each strategy, and explains how to configure the operating system and write code to support thousands of clients.
 In the bottom line, using the reactor pattern is the solution (you can find the details at the original paper).
 
 Today the term has changed and people are talking about C10M - since we have application with millions of conccurent connections. 
