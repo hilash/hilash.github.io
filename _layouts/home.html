@@ -2,6 +2,9 @@
 layout: default
 ---
 
+<div id="ascii-bg-container"></div>
+
+<div id="home-content">
 {{ content }}
 {% assign contentwonl = content | strip_newlines %} {% unless contentwonl == ""  %} <br /> {% endunless %} <!-- add line break if there is any content -->
 
@@ -15,3 +18,6 @@ layout: default
     {%- endfor -%}
   </ul>
 {%- endif -%}
+</div>
+
+<script src="{{ '/assets/js/ascii-ripple.js' | relative_url }}"></script>
