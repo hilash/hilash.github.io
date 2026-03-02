@@ -7,7 +7,9 @@
   <body>
     <div class="container">
 
+      {%- unless page.hide_header -%}
       {%- include header.html -%}
+      {%- endunless -%}
 
     <main>
       {{ content }}

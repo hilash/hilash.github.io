@@ -9,14 +9,13 @@ plugins:
   - jekyll-seo-tag
 
 title: 'hilash.github.io'
-description: "Hila Shmuel, Blog."
+description: "Hila Shmuel, Builder, ex-Apple, podcast host, coding since 2006."
 #baseurl: "/jekyll-theme-console"
 url: "https://hilash.github.io"
 linkedin_username: hilashmuel
 
 header_pages:
   - index.md
-  - about.md
 
 #footer: 'follow us on <a href="https://twitter.com/">twitter</a>'
 footer: ''

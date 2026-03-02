@@ -10,8 +10,6 @@
   var MOUSE_RADIUS = 3;
   var MOUSE_STRENGTH = 80;
   var BG_OPACITY = 0.15;
-  var IMG_FRACTION = 0.55; // right portion that shows the actual image
-  var FADE_BRIGHTNESS = 0.95; // brightness to fade toward on the far left
   var CELL_W = FONT_SIZE * 0.6; // monospace char width approx
   var CELL_H = FONT_SIZE * LINE_HEIGHT;
 
@@ -73,50 +71,25 @@
     rippleCur = new Float32Array(totalCells);
     ripplePrev = new Float32Array(totalCells);
 
-    // Downsample image into right portion, extend left edge naturally
+    // Tile image across entire grid
     var pixels = imgData.data;
-    var imgStartCol = Math.floor(cols * (1 - IMG_FRACTION));
-    var imgCols = cols - imgStartCol;
-
-    // Aspect-fit scaling for the image region
     var imgAspect = imgW / imgH;
-    var gridAspect = (imgCols * CELL_W) / (rows * CELL_H);
 
-    var srcX0, srcY0, srcW, srcH;
-    if (imgAspect > gridAspect) {
-      srcH = imgH;
-      srcW = imgH * gridAspect;
-      srcX0 = (imgW - srcW) / 2;
-      srcY0 = 0;
-    } else {
-      srcW = imgW;
-      srcH = imgW / gridAspect;
-      srcX0 = 0;
-      srcY0 = (imgH - srcH) / 2;
-    }
+    // Determine tile size in grid cells: fit image height to grid rows
+    var tileCols = Math.floor(rows * CELL_H * imgAspect / CELL_W);
+    var tileRows = rows;
 
-    // First pass: fill the image region (right side)
     for (var r = 0; r < rows; r++) {
-      for (var c = 0; c < imgCols; c++) {
-        var px = Math.floor(srcX0 + (c / imgCols) * srcW);
-        var py = Math.floor(srcY0 + (r / rows) * srcH);
+      for (var c = 0; c < cols; c++) {
+        var tr = r % tileRows;
+        var tc = c % tileCols;
+        var px = Math.floor((tc / tileCols) * imgW);
+        var py = Math.floor((tr / tileRows) * imgH);
         px = Math.min(Math.max(px, 0), imgW - 1);
         py = Math.min(Math.max(py, 0), imgH - 1);
         var idx = (py * imgW + px) * 4;
         var lum = (0.299 * pixels[idx] + 0.587 * pixels[idx + 1] + 0.114 * pixels[idx + 2]) / 255;
-        brightness[r * cols + (imgStartCol + c)] = lum;
-      }
-    }
-
-    // Second pass: extend the left edge outward with a fade
-    for (var r = 0; r < rows; r++) {
-      var edgeBrightness = brightness[r * cols + imgStartCol];
-      for (var c = 0; c < imgStartCol; c++) {
-        // t=0 at far left, t=1 at the image edge
-        var t = c / imgStartCol;
-        // Smooth ease-in so it blends gently
-        t = t * t;
-        brightness[r * cols + c] = FADE_BRIGHTNESS * (1 - t) + edgeBrightness * t;
+        brightness[r * cols + c] = lum;
       }
     }
 
